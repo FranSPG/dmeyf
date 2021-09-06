@@ -7,10 +7,11 @@ require("parallel")
 require("rpart")
 
 #setwd( "M:\\" )
-setwd( "~/buckets/b1/crudoB/" )
+setwd("/Users/fran/Documents/Maestria/DM en Economia y Finanzas/")  #Establezco el Working Directory
+#setwd( "~/buckets/b1/crudoB/" )
 
-ksemillas  <- c(102191, 200177, 410551, 552581, 892237) #reemplazar por las propias semillas
-ksemilla_extra  <- 950009  #reemplazar por una elegida en el momento
+ksemillas  <- c(792563, 398933, 181421, 394717, 856799) #reemplazar por las propias semillas
+ksemilla_extra  <- 159991  #reemplazar por una elegida en el momento
 
 #------------------------------------------------------------------------------
 

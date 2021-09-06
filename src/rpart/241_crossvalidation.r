@@ -8,9 +8,9 @@ require("data.table")
 require("parallel")
 require("rpart")
 
-setwd( "M:\\" )
+setwd("/Users/fran/Documents/Maestria/DM en Economia y Finanzas/")  #Establezco el Working Directory
 
-ksemillas  <- c(102191, 200177, 410551, 552581, 892237) #reemplazar por las propias semillas
+ksemillas  <- c(792563, 398933, 181421, 394717, 856799) #reemplazar por las propias semillas
 
 #------------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ ArbolesCrossValidation  <- function( data, param, qfolds, semilla )
                           seq(qfolds), # 1 2 3 4 5  
                           MoreArgs= list( data, param), 
                           SIMPLIFY= FALSE,
-                          mc.cores= 1 )   #se puede subir a 5 si posee Linux o Mac OS
+                          mc.cores= 5 )   #se puede subir a 5 si posee Linux o Mac OS
 
   #devuelvo la primer ganancia y el promedio
   return( mean( unlist( ganancias )) *  qfolds )   #aqui normalizo
@@ -67,7 +67,7 @@ dataset  <- fread("./datasetsOri/paquete_premium_202009.csv")
 tb_resultados  <- data.table( maxdepth=integer(), ganancia=numeric() )
 
 
-for(  vmaxdepth in  c(4,5,6,7,6,9,10,11) )
+for(  vmaxdepth in  c(4,5,6,7,8,9,10,11) )
 {
   param_basicos  <- list( "cp"=-1, "maxdepth"= vmaxdepth )
 
