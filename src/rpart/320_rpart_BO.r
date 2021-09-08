@@ -16,13 +16,13 @@ require("parallel")
 #paquetes necesarios para la Bayesian Optimization
 require("DiceKriging")
 require("mlrMBO")
-
+library(imputeTS)
 
 #para poder usarlo en la PC y en la nube
 switch ( Sys.info()[['sysname']],
          Windows = { directory.root   <-  "M:\\" },   #Microsoft Windows
-         Darwin  = { directory.root   <-  "~/dm/" },  #Apple MAC
-         Linux   = { directory.root   <-  "~/buckets/b1/crudo/" }  #Entorno Google Cloud
+         Darwin  = { directory.root   <-  "/Users/fran/Documents/Maestria/DM en Economia y Finanzas/" },  #Apple MAC
+         Linux   = { directory.root   <-  "/Users/fran/Documents/Maestria/DM en Economia y Finanzas/" }  #Entorno Google Cloud
        )
 #defino la carpeta donde trabajo
 setwd( directory.root )
@@ -35,6 +35,7 @@ karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
 karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
 kBO_iter    <-  200   #cantidad de iteraciones de la Optimizacion Bayesiana
 
+
 hs  <- makeParamSet(
           makeNumericParam("cp"       , lower= -1   , upper=    0.1),
           makeIntegerParam("minsplit" , lower=  1L  , upper= 8000L),  #la letra L al final significa ENTERO
@@ -43,7 +44,7 @@ hs  <- makeParamSet(
           forbidden = quote( minbucket > 0.5*minsplit ) )
 
 
-ksemilla_azar  <- 102191
+ksemilla_azar  <- 792563
 #------------------------------------------------------------------------------
 #Funcion que lleva el registro de los experimentos
 
@@ -203,6 +204,19 @@ if( file.exists(klog) )
 dataset  <- fread(karch_generacion)   #donde entreno
 dapply  <- fread(karch_aplicacion)    #donde aplico el modelo
 
+columns_drop = c('internet', 'tpaquete1', 'mcajeros_propios_descuentos',
+                 'mtarjeta_visa_descuentos', 'mtarjeta_master_descuentos',
+                 'tmobile_app', 'cmobile_app_trx', 'Master_Finiciomora',
+                 'Master_madelantodolares', 'Visa_Finiciomora',
+                 'Visa_msaldodolares', 'Visa_mpagado')
+
+dataset = subset(dataset, select= !(names(dataset) %in% columns_drop))
+dapply = subset(dapply, select= !(names(dapply) %in% columns_drop))
+
+dataset = na_kalman(dataset)
+dapply = na_kalman(dapply)
+
+View(dataset)
 #Aqui comienza la configuracion de la Bayesian Optimization
 
 configureMlr( show.learner.output = FALSE)
