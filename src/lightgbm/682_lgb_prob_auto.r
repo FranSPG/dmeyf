@@ -29,7 +29,7 @@ require("mlrMBO")
 #cambiar aqui las rutas en su maquina
 switch ( Sys.info()[['sysname']],
          Windows = { directory.root  <-  "M:\\" },   #Windows
-         Darwin  = { directory.root  <-  "~/dm/" },  #Apple MAC
+         Darwin  = { directory.root  <-  "/Users/fran/Documents/Maestria/DM en Economia y Finanzas/" },  #Apple MAC
          Linux   = { directory.root  <-  "~/buckets/b1/" } #Google Cloud
        )
 #defino la carpeta donde trabajo
@@ -40,21 +40,28 @@ setwd( directory.root )
 kexperimento  <- NA   #NA si se corre la primera vez, un valor concreto si es para continuar procesando
 
 kscript           <- "682_lgb_prob_auto"
-karch_generacion  <- "./datasetsOri/paquete_premium_202009.csv"
-karch_aplicacion  <- "./datasetsOri/paquete_premium_202011.csv"
-kBO_iter    <-  150   #cantidad de iteraciones de la Optimizacion Bayesiana
+karch_generacion  <- "./datasets/paquete_premium_202009_most_important_15_features_ratio_and_dummies_and_polynomial_transform.csv"
+karch_aplicacion  <- "./datasets/paquete_premium_202011_most_important_features_ratio_and_dummies_and_polynomial_transform.csv"
+kBO_iter    <-  350   #cantidad de iteraciones de la Optimizacion Bayesiana
 
 #Aqui se cargan los hiperparametros
 hs <- makeParamSet( 
          makeNumericParam("learning_rate",    lower= 0.01 , upper=    0.1),
          makeNumericParam("feature_fraction", lower= 0.2  , upper=    1.0),
          makeIntegerParam("min_data_in_leaf", lower= 0    , upper= 8000),
-         makeIntegerParam("num_leaves",       lower=16L   , upper= 1024L)
+         makeIntegerParam("num_leaves",       lower=16L   , upper= 1024L),
+         makeIntegerParam("lambda_l1",       lower=0.0   , upper= 100),
+         makeIntegerParam("lambda_l2",       lower=0.0   , upper= 100),
+         makeIntegerParam("max_depth",       lower=-1   , upper= 50),
+         makeIntegerParam("min_gain_to_split", lower=0   , upper= 100)
         )
 
-campos_malos  <- c( "ccajas_transacciones", "Master_mpagominimo" )   #aqui se deben cargar todos los campos culpables del Data Drifting
+# campos_malos  <- c( "ccajas_transacciones", "Master_mpagominimo" )   #aqui se deben cargar todos los campos culpables del Data Drifting
+campos_malos  <- c("clase_ternaria", "clase01", "ccajas_transacciones", "Master_mpagominimo")
 
-ksemilla_azar  <- 102191  #Aqui poner la propia semilla
+
+
+ksemilla_azar  <- 792563  #Aqui poner la propia semilla
 #------------------------------------------------------------------------------
 #Funcion que lleva el registro de los experimentos
 
@@ -137,13 +144,10 @@ EstimarGanancia_lightgbm  <- function( x )
                           feature_pre_filter= FALSE,
                           verbosity= -100,
                           seed= 999983,
-                          max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
-                          min_gain_to_split= 0.0, #por ahora, lo dejo fijo
-                          lambda_l1= 0.0,         #por ahora, lo dejo fijo
-                          lambda_l2= 0.0,         #por ahora, lo dejo fijo
-                          max_bin= 31,            #por ahora, lo dejo fijo
+                          max_bin=31,
                           num_iterations= 9999,    #un numero muy grande, lo limita early_stopping_rounds
-                          force_row_wise= TRUE    #para que los alumnos no se atemoricen con tantos warning
+                          force_row_wise= TRUE,    #para que los alumnos no se atemoricen con tantos warning
+                          n_jobs=-2
                         )
 
   #el parametro discolo, que depende de otro
@@ -158,7 +162,8 @@ EstimarGanancia_lightgbm  <- function( x )
                        stratified= TRUE, #sobre el cross validation
                        nfold= kfolds,    #folds del cross validation
                        param= param_completo,
-                       verbose= -100
+                       verbose= -100,
+                       n_jobs=-2
                       )
 
 
@@ -243,6 +248,7 @@ dataset[ , clase01:= ifelse( clase_ternaria=="CONTINUA", 0, 1 ) ]
 
 #los campos que se van a utilizar
 campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01", campos_malos) )
+                           
 
 #dejo los datos en el formato que necesita LightGBM
 #uso el weight como un truco ESPANTOSO para saber la clase real
@@ -288,7 +294,7 @@ if(!file.exists(kbayesiana)) {
 
 
 #apagado de la maquina virtual, pero NO se borra
-system( "sleep 10  &&  sudo shutdown -h now", wait=FALSE)
+# system( "sleep 10  &&  sudo shutdown -h now", wait=FALSE)
 
 #suicidio,  elimina la maquina virtual directamente
 #system( "sleep 10  && 
@@ -298,6 +304,6 @@ system( "sleep 10  &&  sudo shutdown -h now", wait=FALSE)
 #        wait=FALSE )
 
 
-quit( save="no" )
+# quit( save="no" )
 
 
